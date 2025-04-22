@@ -22,16 +22,36 @@ exports.createRepairOrder = async (req, res) => {
     if (!repairOrderId) repairOrderId = uuidv4().replace(/-/g, "").substring(0, 15);
     if (!repairOrderCode) repairOrderCode = crypto.randomBytes(3).toString("hex").toUpperCase();
     if (!createdDateTime) createdDateTime = new Date();
-
+    if (reserveDate) reserveDate = new Date(reserveDate);
+    // if (!userId) userId = null; 
+  
     db.query(
-        "INSERT INTO repairorder (details, deviceModel, repairOrderType, deviceType, phone, pickUpAddress, reserveDate, status, userId, repairOrderId, repairOrderCode, createdDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        `INSERT INTO repairorder 
+        (details, deviceModel, repairOrderType, deviceType, phone, pickUpAddress, reserveDate, status, userId, repairOrderId, repairOrderCode, createdDateTime) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [details, deviceModel, repairOrderType, deviceType, phone, pickUpAddress, reserveDate, status, userId, repairOrderId, repairOrderCode, createdDateTime],
         (err, result) => {
-            if (err) return res.status(500).json({ error: "Database error" });
+            if (err) {
+                console.error("DB INSERT ERROR:", err);
+                return res.status(500).json({ error: "Database error", details: err.message });
+            }
 
             res.status(201).json({
                 message: "Repair order successfully booked",
-                repairOrder: { repairOrderId, repairOrderCode, details, deviceModel, repairOrderType, deviceType, phone, pickUpAddress, reserveDate, status, userId, createdDateTime }
+                repairOrder: {
+                    repairOrderId,
+                    repairOrderCode,
+                    details,
+                    deviceModel,
+                    repairOrderType,
+                    deviceType,
+                    phone,
+                    pickUpAddress,
+                    reserveDate,
+                    status,
+                    userId,
+                    createdDateTime
+                }
             });
         }
     );
