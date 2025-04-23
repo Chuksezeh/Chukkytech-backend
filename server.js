@@ -9,6 +9,14 @@ const adminRepairOrderRoutes = require("./routes/adminRepairOrderRoutes");
 const registerAdminUser = require("./routes/authRoutes")
 const loginAdminUser = require("./routes/authRoutes");
 const getAllOrders = require("./routes/authRoutes")
+const updateUserStatus = require("./routes/authRoutes");
+const deleteUser = require("./routes/authRoutes");
+const getAllAdminUsers = require("./routes/authRoutes");
+
+const updateAdminStatus = require("./routes/authRoutes");
+const deleteAdminUser = require("./routes/authRoutes");
+const registerLocation = require("./routes/locationRoutes");
+const getAllLocations = require("./routes/locationRoutes")
 
 const app = express();
 app.use(express.json());
@@ -20,6 +28,14 @@ app.use("/adminRepair", adminRepairOrderRoutes);
 app.use("/auth", registerAdminUser);
 app.use("/auth", loginAdminUser);
 app.use("/auth", getAllOrders);
+app.use("/auth", updateUserStatus);
+app.use("/auth", deleteUser);
+app.use("/auth", getAllAdminUsers);
+app.use("/auth", updateAdminStatus);
+app.use("/auth", deleteAdminUser);
+app.use("/location", registerLocation);
+app.use("/location", getAllLocations)
+
 
 
 

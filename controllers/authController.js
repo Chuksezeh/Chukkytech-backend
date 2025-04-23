@@ -26,30 +26,79 @@ exports.registerUser = async (req, res) => {
     });
 };
 
-// exports.registerAdminUser = async (req, res) => {
-//     const { firstName, lastName, email, phone, password, userType, status, role } = req.body;
-//     const userId = uuidv4().replace(/-/g, "").substring(0, 15);
-//     const createdDateTime = new Date();
+exports.updateUserStatus = async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.body;
 
-//     db.query("SELECT * FROM admin_user_registrations WHERE email = ?", [email], async (err, results) => {
-//         if (err) return res.status(500).json({ error: "Database error" });
-//         console.log("errrr", err)
+    // Validate status
+    if (!status || (status !== "suspended" && status !== "Active")) {
+        return res.status(400).json({ 
+            message: "Status is required and must be either 'suspended' or 'Active'" 
+        });
+    }
 
-//         if (results.length > 0) return res.status(400).json({ message: "Email already exists" });
+    db.query(
+        "UPDATE registration SET status = ? WHERE userId = ?",
+        [status, userId],
+        (err, result) => {
+            if (err) return res.status(500).json({ 
+                error: "Database error", 
+                details: err.message 
+            });
 
-//         const hashedPassword = await bcrypt.hash(password, 10);
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ 
+                    message: "User not found" 
+                });
+            }
 
-//         db.query(
-//             "INSERT INTO admin_user_registrations (userId, firstName, lastName, email, phone, password, userType, status,role, createdDateTime) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?)",
-//             [userId, firstName, lastName, email, phone ,  hashedPassword, userType, status,role, createdDateTime],
-//             (err, result) => {
-//                 if (err) return res.status(500).json({ error: "Database error" });
-//                 console.log("errrr", err)
-//                 res.status(201).json({ message: "User registered successfully" });
-//             }
-//         );
-//     });
-// };
+            res.status(200).json({ 
+                message: "User status updated successfully",
+                userId,
+                newStatus: status
+            });
+        }
+    );
+};
+
+
+// admin update status
+exports.updateAdminStatus = async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    if (!status || (status !== "suspended" && status !== "Active")) {
+        return res.status(400).json({ 
+            message: "Status is required and must be either 'suspended' or 'Active'" 
+        });
+    }
+
+    db.query(
+        "UPDATE admin_user_registrations SET status = ? WHERE userId = ?",
+        [status, userId],
+        (err, result) => {
+            if (err) return res.status(500).json({ 
+                error: "Database error", 
+                details: err.message 
+            });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ 
+                    message: "User not found" 
+                });
+            }
+
+            res.status(200).json({ 
+                message: "User status updated successfully",
+                userId,
+                newStatus: status
+            });
+        }
+    );
+};
+
+
 
 
 // User Login
@@ -112,6 +161,7 @@ exports.registerAdminUser = async (req, res) => {
     }
 };
 
+
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -135,6 +185,7 @@ exports.loginUser = async (req, res) => {
         });
     });
 };
+
 
 
 // admin login 
@@ -171,3 +222,80 @@ exports.getAllUsers = (req, res) => {
         res.json(results);
     });
 };
+
+exports.getAllAdminUsers = (req, res) => {
+    db.query("SELECT * FROM admin_user_registrations ORDER BY createdDateTime DESC", (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err });
+            return;
+        }
+        res.json(results);
+    });
+};
+
+
+exports.deleteUser = async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+    }
+
+    db.query("SELECT * FROM registration WHERE userId = ?", [userId], (err, result) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        db.query("DELETE FROM registration WHERE userId = ?", [userId], (err, result) => {
+            if (err) {
+                console.error("Delete error:", err);
+                return res.status(500).json({ error: "Failed to delete user" });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "User successfully deleted",
+                userId: userId
+            });
+        });
+    });
+};
+
+
+exports.deleteAdminUser = async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+    }
+
+    db.query("SELECT * FROM admin_user_registrations WHERE userId = ?", [userId], (err, result) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        db.query("DELETE FROM admin_user_registrations WHERE userId = ?", [userId], (err, result) => {
+            if (err) {
+                console.error("Delete error:", err);
+                return res.status(500).json({ error: "Failed to delete user" });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "User successfully deleted",
+                userId: userId
+            });
+        });
+    });
+};
+
