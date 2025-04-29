@@ -17,6 +17,12 @@ const updateAdminStatus = require("./routes/authRoutes");
 const deleteAdminUser = require("./routes/authRoutes");
 const registerLocation = require("./routes/locationRoutes");
 const getAllLocations = require("./routes/locationRoutes")
+const createUserComment = require("./routes/userCommentRoutes");
+const getAllComments = require("./routes/userCommentRoutes");
+const updateCommentStatus = require("./routes/userCommentRoutes");
+const deleteComment = require("./routes/userCommentRoutes");
+const updateLocation = require("./routes/locationRoutes");
+const deleteLocation = require("./routes/locationRoutes");
 
 const app = express();
 app.use(express.json());
@@ -34,7 +40,13 @@ app.use("/auth", getAllAdminUsers);
 app.use("/auth", updateAdminStatus);
 app.use("/auth", deleteAdminUser);
 app.use("/location", registerLocation);
-app.use("/location", getAllLocations)
+app.use("/location", getAllLocations);
+app.use("/comment", createUserComment);
+app.use("/comment", getAllComments);
+app.use("/comment", updateCommentStatus);
+app.use("/comment", deleteComment);
+app.use("/location", updateLocation);
+app.use("/location", deleteLocation);
 
 
 
